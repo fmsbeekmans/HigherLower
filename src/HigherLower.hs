@@ -12,19 +12,20 @@ data Game = Game
             , status :: Status
             } deriving (Show)
 
-guess :: Int -> State Game (Maybe Ordering)
-guess i = state $
-          \case g@(Game (l, u) secret status)
-                  | status == Lost -> (Nothing, g)
-                  | status == Won -> (Nothing, g)
-                  | otherwise -> (Just result, Game nextBounds secret nextStatus)
-                  where
-                    result = compare i secret
-                    nextBounds = case result of
-                      EQ -> (l, u)
-                      LT -> (i, u)
-                      GT -> (l, i)
-                    nextStatus = newStatus status result
+guess :: (Monad m) => Int -> StateT Game m (Maybe Ordering)
+guess i = state step
+  where
+    step g@(Game (l, u) secret status)
+      | status == Lost = (Nothing, g)
+      | status == Won = (Nothing, g)
+      | otherwise = (Just result, Game nextBounds secret nextStatus)
+      where
+        result = compare i secret
+        nextBounds = case result of
+          EQ -> (l, u)
+          LT -> (i, u)
+          GT -> (l, i)
+        nextStatus = newStatus status result
 
 newStatus :: Status -> Ordering -> Status
 newStatus (Active i) EQ
