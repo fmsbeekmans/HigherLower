@@ -17,15 +17,14 @@ guess i = state $
           \case g@(Game (l, u) secret status)
                   | status == Lost -> (Nothing, g)
                   | status == Won -> (Nothing, g)
-                  | otherwise ->
-                    let
-                      result = compare i secret
-                      nextBounds = case result of
-                        EQ -> (l, u)
-                        LT -> (i, u)
-                        GT -> (l, i)
-                      nextStatus = newStatus status result
-                    in (Just result, Game nextBounds secret nextStatus)
+                  | otherwise -> (Just result, Game nextBounds secret nextStatus)
+                  where
+                    result = compare i secret
+                    nextBounds = case result of
+                      EQ -> (l, u)
+                      LT -> (i, u)
+                      GT -> (l, i)
+                    nextStatus = newStatus status result
 
 newStatus :: Status -> Ordering -> Status
 newStatus (Active i) EQ
@@ -33,3 +32,4 @@ newStatus (Active i) EQ
   | otherwise = Lost
 newStatus (Active 0) _ = Lost
 newStatus (Active i) _ = Active (i - 1)
+newStatus oldState _ = oldState
