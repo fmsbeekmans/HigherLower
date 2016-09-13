@@ -1,6 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
-
-module HigherLower where
+module HigherLower.Game where
 
 import Control.Monad.State
 
