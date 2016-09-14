@@ -9,8 +9,7 @@ import HigherLower.Game
 main :: IO ()
 main = do
   g <- createGame
---  runState (mfix play) $ asStateTIO g
-  return ()
+  evalStateT playGame g
   
 createGame :: IO Game
 createGame = do
@@ -18,18 +17,20 @@ createGame = do
   high <- retryPrompt "Not a number" (promptInt "Give an upper bound")
   turns <- retryPrompt "Not a number" (promptInt "How many tries do you get?")
   secret <- getStdRandom (randomR (low, high))
-  return (Game (low, high) turns (Active turns))
+  return (Game (low, high) secret (Active turns))
 
-play :: StateT Game IO () -> StateT Game IO ()
-play state = do
-  i <- asStateTIO $ retryPrompt "Not a number" (promptInt "How many tries do you get?")
-  result <- guess i
-  
-  return ()
-
-asStateTIO :: IO a -> StateT Game IO a
-asStateTIO = liftIO
-
+playGame :: StateT Game IO ()
+playGame = do
+  i <- liftIO $ retryPrompt "Not a number" (promptInt "Your guess:")
+  result <- checkGuess i
+  case result of
+   Nothing -> liftIO (putStrLn "This game was already played.")
+   Just r -> do
+     case r of
+       LT -> liftIO (putStrLn "Getting closer; your guess was too low.") >> playGame
+       GT -> liftIO (putStrLn "Getting closer; your guess was too high.") >> playGame
+       EQ -> liftIO (putStrLn "YOU WIN!")
+       
 promptInt :: String ->  IO (Maybe Int)
 promptInt q = do
   putStrLn q

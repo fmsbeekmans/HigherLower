@@ -10,8 +10,8 @@ data Game = Game
             , status :: Status
             } deriving (Show)
 
-guess :: (Monad m) => Int -> StateT Game m (Maybe Ordering)
-guess i = state step
+checkGuess :: (Monad m) => Int -> StateT Game m (Maybe Ordering)
+checkGuess i = state step
   where
     step g@(Game (l, u) secret status)
       | status == Lost = (Nothing, g)
